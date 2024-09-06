@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/BoruTamena/internal/core/models"
 	"github.com/BoruTamena/internal/core/port/repository"
 	"github.com/BoruTamena/internal/core/port/service"
 )
@@ -17,8 +18,11 @@ func NewCartService(Rep repository.CartRepository) service.CartService {
 
 }
 
-func (cs cartService) AddItem()        {}
-func (cs cartService) RemoveItem()     {}
-func (cs cartService) UpdateQuantity() {}
-func (cs cartService) ViewCartItem()   {}
-func (cs cartService) Checkout()       {}
+func (cs cartService) AddItem(product models.Product) (int, error) {
+
+}
+
+func (cs cartService) RemoveItem(item_id int) error                       {}
+func (cs cartService) UpdateQuantity(item_id int) (models.Product, error) {}
+func (cs cartService) ViewCartItem() ([]models.Product, eror)             {}
+func (cs cartService) Checkout()                                          {}
