@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/BoruTamena/internal/core/models"
 	"github.com/BoruTamena/internal/core/port/service"
@@ -35,9 +36,9 @@ func (ch cartHandler) AddItemToCart(c *gin.Context) {
 		return
 
 	}
-	// user don't have shopping session
+	// user don't have shopping session before
 	if Item.SessionId == 0 {
-
+		// creating new shopping session for user
 		session_id, err := ch.Service.CreateShoppingSession()
 
 		if err != nil {
@@ -98,11 +99,32 @@ func (ch cartHandler) RemoveItemFromCart(c *gin.Context) {
 	}
 }
 
-func (ch cartHandler) UpdateCartItem(c *gin.Context) {
+func (ch cartHandler) ViewCartItems(c *gin.Context) {
+
+	user_id := c.Query("user_id")
+
+	userID, err := strconv.Atoi(user_id)
+
+	if err != nil {
+		// setting error
+		c.Error(err)
+		return
+
+	}
+
+	items, err := ch.Service.ViewCartItem(userID)
+
+	if err != nil {
+		// setting error
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "success", "data": items})
 
 }
 
-func (ch cartHandler) ViewCartItems(c *gin.Context) {
+func (ch cartHandler) UpdateCartItem(c *gin.Context) {
 
 }
 

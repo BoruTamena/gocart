@@ -51,5 +51,12 @@ SET quantity = $3, modified_at = CURRENT_TIMESTAMP
 WHERE session_id = $1 AND product_id = $2
 RETURNING id ;
 
+-- name: ViewCurrentCartITem :exec 
+SELECT * FROM  product
+WHERE product.id IN (
+    SELECT product_id 
+    FROM cart_item 
+    WHERE session_id=$1
+);
 
 

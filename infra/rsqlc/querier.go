@@ -64,6 +64,15 @@ type Querier interface {
 	//  WHERE session_id = $1 AND product_id = $2
 	//  RETURNING id
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) error
+	//ViewCurrentCartITem
+	//
+	//  SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
+	//  WHERE product.id IN (
+	//      SELECT product_id
+	//      FROM cart_item
+	//      WHERE session_id=$1
+	//  )
+	ViewCurrentCartITem(ctx context.Context, sessionID sql.NullInt32) error
 }
 
 var _ Querier = (*Queries)(nil)

@@ -165,3 +165,25 @@ func (q *Queries) UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItem
 	_, err := q.db.ExecContext(ctx, updateCartItemQuantity, arg.SessionID, arg.ProductID, arg.Quantity)
 	return err
 }
+
+const viewCurrentCartITem = `-- name: ViewCurrentCartITem :exec
+SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
+WHERE product.id IN (
+    SELECT product_id 
+    FROM cart_item 
+    WHERE session_id=$1
+)
+`
+
+// ViewCurrentCartITem
+//
+//	SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
+//	WHERE product.id IN (
+//	    SELECT product_id
+//	    FROM cart_item
+//	    WHERE session_id=$1
+//	)
+func (q *Queries) ViewCurrentCartITem(ctx context.Context, sessionID sql.NullInt32) error {
+	_, err := q.db.ExecContext(ctx, viewCurrentCartITem, sessionID)
+	return err
+}
