@@ -18,11 +18,12 @@ func NewCartService(Rep repository.CartRepository) service.CartService {
 
 }
 
-func (cs cartService) AddItem(product models.Product) (int, error) {
+func (cs cartService) CreateShoppingSession() (int, error) {}
+func (cs cartService) AddItem(product models.Item) (int, error) {
 
 }
 
-func (cs cartService) RemoveItem(item_id int) error                       {}
-func (cs cartService) UpdateQuantity(item_id int) (models.Product, error) {}
-func (cs cartService) ViewCartItem() ([]models.Product, error)            {}
-func (cs cartService) Checkout()                                          {}
+func (cs cartService) RemoveItem(item_id int) error                    {}
+func (cs cartService) UpdateQuantity(item_id int) (models.Item, error) {}
+func (cs cartService) ViewCartItem() ([]models.Item, error)            {}
+func (cs cartService) Checkout()                                       {}
