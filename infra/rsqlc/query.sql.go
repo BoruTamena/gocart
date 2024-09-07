@@ -87,21 +87,55 @@ func (q *Queries) GetActiveSession(ctx context.Context, userID sql.NullInt32) (S
 }
 
 const removeCartItem = `-- name: RemoveCartItem :execrows
-DELETE FROM cart_item
-WHERE session_id = $1 AND product_id = $2
+WITH delete_item AS (
+    DELETE FROM cart_item
+    WHERE session_id = $1 AND product_id = $2
+    RETURNING session_id
+) ,
+updated_session AS (
+    UPDATE  shopping_session 
+    SET total= (
+        SELECT COALESCE(SUM(quantity),0)
+        FROM cart_item
+        WHERE session_id=$2
+    )
+    WHERE id=$2 RETURNING id,total
+)
+UPDATE shopping_session 
+SET total=0 
+WHERE id =$2 AND NOT EXISTS  (
+   SELECT 1 FROM cart_item WHERE session_id = $2
+)
 `
 
 type RemoveCartItemParams struct {
-	SessionID sql.NullInt32 `db:"session_id" json:"session_id"`
-	ProductID sql.NullInt32 `db:"product_id" json:"product_id"`
+	Column1 sql.NullInt32 `db:"column_1" json:"column_1"`
+	Column2 sql.NullInt32 `db:"column_2" json:"column_2"`
 }
 
 // RemoveCartItem
 //
-//	DELETE FROM cart_item
-//	WHERE session_id = $1 AND product_id = $2
+//	WITH delete_item AS (
+//	    DELETE FROM cart_item
+//	    WHERE session_id = $1 AND product_id = $2
+//	    RETURNING session_id
+//	) ,
+//	updated_session AS (
+//	    UPDATE  shopping_session
+//	    SET total= (
+//	        SELECT COALESCE(SUM(quantity),0)
+//	        FROM cart_item
+//	        WHERE session_id=$2
+//	    )
+//	    WHERE id=$2 RETURNING id,total
+//	)
+//	UPDATE shopping_session
+//	SET total=0
+//	WHERE id =$2 AND NOT EXISTS  (
+//	   SELECT 1 FROM cart_item WHERE session_id = $2
+//	)
 func (q *Queries) RemoveCartItem(ctx context.Context, arg RemoveCartItemParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, removeCartItem, arg.SessionID, arg.ProductID)
+	result, err := q.db.ExecContext(ctx, removeCartItem, arg.Column1, arg.Column2)
 	if err != nil {
 		return 0, err
 	}

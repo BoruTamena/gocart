@@ -73,6 +73,29 @@ func (ch cartHandler) AddItemToCart(c *gin.Context) {
 
 func (ch cartHandler) RemoveItemFromCart(c *gin.Context) {
 
+	var Deleted_item models.DeletedItem
+
+	if err := c.ShouldBindQuery(&Deleted_item); err != nil {
+		// setting error
+		c.Error(err)
+
+		return
+	}
+
+	// removing item
+	affected_row, err := ch.Service.RemoveItem(Deleted_item)
+
+	if err != nil {
+		// setting error
+		c.Error(err)
+		return
+	}
+	if affected_row > 0 {
+		c.JSON(http.StatusAccepted, gin.H{"message": "item removed from cart "})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": " something went wrong "})
+
+	}
 }
 
 func (ch cartHandler) UpdateCartItem(c *gin.Context) {

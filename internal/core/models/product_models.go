@@ -13,3 +13,9 @@ type Item struct {
 	SessionId int `json:"session_id"`
 	Quantity  int `json:"quantity"`
 }
+
+type DeletedItem struct {
+	UserId    int `json:"user_id"`
+	ProductId int `json:"product_id"`
+	SessionId int `json:"session_id"`
+}
