@@ -9,9 +9,9 @@ type Session struct {
 }
 
 type Item struct {
-	ProductId int `json:"product_id"`
-	SessionId int `json:"session_id"`
-	Quantity  int `json:"quantity"`
+	ProductId int `json:"product_id,omitempty"`
+	SessionId int `json:"session_id,omitempty"`
+	Quantity  int `json:"quantity,omitempty"`
 }
 
 type DeletedItem struct {

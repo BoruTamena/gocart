@@ -59,4 +59,15 @@ WHERE product.id IN (
     WHERE session_id=$1
 );
 
+-- name: IncreaseQuantity :exec
+UPDATE cart_item 
+SET quantity=quantity+1
+WHERE session_id = $1 AND product_id = $2 ;
+
+
+
+-- name: DecreaseQuantity :exec
+UPDATE cart_item 
+SET quantity=quantity-1
+WHERE session_id = $1 AND product_id = $2 AND quantity > 1;
 

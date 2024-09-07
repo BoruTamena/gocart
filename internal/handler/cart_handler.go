@@ -124,7 +124,48 @@ func (ch cartHandler) ViewCartItems(c *gin.Context) {
 
 }
 
-func (ch cartHandler) UpdateCartItem(c *gin.Context) {
+func (ch cartHandler) AddItemQuantity(c *gin.Context) {
+
+	var item models.Item
+
+	if err := c.ShouldBind(&item); err != nil {
+		// setting error
+		c.Error(err)
+		return
+
+	}
+
+	affected_row, err := ch.Service.IncreaseItemQuantity(item)
+
+	if err != nil {
+		// setting error
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "item quantity increase", "row": affected_row})
+}
+
+func (ch cartHandler) SubtractItemQuantity(c *gin.Context) {
+
+	var item models.Item
+
+	if err := c.ShouldBind(&item); err != nil {
+		// setting error
+		c.Error(err)
+		return
+
+	}
+
+	affected_row, err := ch.Service.DecreaseItemQuantity(item)
+
+	if err != nil {
+		// setting error
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "item quantity decrease", "row": affected_row})
 
 }
 

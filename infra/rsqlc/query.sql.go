@@ -58,6 +58,27 @@ func (q *Queries) CreateShoppingSession(ctx context.Context, userID sql.NullInt3
 	return err
 }
 
+const decreaseQuantity = `-- name: DecreaseQuantity :exec
+UPDATE cart_item 
+SET quantity=quantity-1
+WHERE session_id = $1 AND product_id = $2 AND quantity > 1
+`
+
+type DecreaseQuantityParams struct {
+	SessionID sql.NullInt32 `db:"session_id" json:"session_id"`
+	ProductID sql.NullInt32 `db:"product_id" json:"product_id"`
+}
+
+// DecreaseQuantity
+//
+//	UPDATE cart_item
+//	SET quantity=quantity-1
+//	WHERE session_id = $1 AND product_id = $2 AND quantity > 1
+func (q *Queries) DecreaseQuantity(ctx context.Context, arg DecreaseQuantityParams) error {
+	_, err := q.db.ExecContext(ctx, decreaseQuantity, arg.SessionID, arg.ProductID)
+	return err
+}
+
 const getActiveSession = `-- name: GetActiveSession :one
 SELECT id, user_id, total, created_at, modified_at 
 FROM shopping_session
@@ -84,6 +105,27 @@ func (q *Queries) GetActiveSession(ctx context.Context, userID sql.NullInt32) (S
 		&i.ModifiedAt,
 	)
 	return i, err
+}
+
+const increaseQuantity = `-- name: IncreaseQuantity :exec
+UPDATE cart_item 
+SET quantity=quantity+1
+WHERE session_id = $1 AND product_id = $2
+`
+
+type IncreaseQuantityParams struct {
+	SessionID sql.NullInt32 `db:"session_id" json:"session_id"`
+	ProductID sql.NullInt32 `db:"product_id" json:"product_id"`
+}
+
+// IncreaseQuantity
+//
+//	UPDATE cart_item
+//	SET quantity=quantity+1
+//	WHERE session_id = $1 AND product_id = $2
+func (q *Queries) IncreaseQuantity(ctx context.Context, arg IncreaseQuantityParams) error {
+	_, err := q.db.ExecContext(ctx, increaseQuantity, arg.SessionID, arg.ProductID)
+	return err
 }
 
 const removeCartItem = `-- name: RemoveCartItem :execrows

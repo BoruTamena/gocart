@@ -21,8 +21,17 @@ func NewCartService(Rep repository.CartRepository) service.CartService {
 func (cs cartService) CreateShoppingSession() (int, error) {}
 func (cs cartService) AddItem(product models.Item) (int, error) {
 
+	// adding new item to cart
 }
+func (cs cartService) IncreaseItemQuantity(product models.Item) (int, error) {
 
+	// increase existing cart item quantity
+}
+func (cs cartService) DecreaseItemQuantity(product models.Item) (int, error) {
+
+	// decrease existing cart item quantity
+
+}
 func (cs cartService) RemoveItem(item models.DeletedItem) (int, error) {}
 func (cs cartService) UpdateQuantity(item_id int) (models.Item, error) {}
 func (cs cartService) ViewCartItem(user_id int) ([]models.Item, error) {

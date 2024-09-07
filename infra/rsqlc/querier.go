@@ -27,6 +27,12 @@ type Querier interface {
 	//  VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	//  RETURNING id
 	CreateShoppingSession(ctx context.Context, userID sql.NullInt32) error
+	//DecreaseQuantity
+	//
+	//  UPDATE cart_item
+	//  SET quantity=quantity-1
+	//  WHERE session_id = $1 AND product_id = $2 AND quantity > 1
+	DecreaseQuantity(ctx context.Context, arg DecreaseQuantityParams) error
 	//GetActiveSession
 	//
 	//  SELECT id, user_id, total, created_at, modified_at
@@ -35,6 +41,12 @@ type Querier interface {
 	//  ORDER BY created_at DESC
 	//  LIMIT 1
 	GetActiveSession(ctx context.Context, userID sql.NullInt32) (ShoppingSession, error)
+	//IncreaseQuantity
+	//
+	//  UPDATE cart_item
+	//  SET quantity=quantity+1
+	//  WHERE session_id = $1 AND product_id = $2
+	IncreaseQuantity(ctx context.Context, arg IncreaseQuantityParams) error
 	//RemoveCartItem
 	//
 	//  WITH delete_item AS (
