@@ -1,14 +1,17 @@
 package service
 
-import "github.com/BoruTamena/internal/core/models"
+import (
+	"context"
+
+	"github.com/BoruTamena/internal/core/models"
+)
 
 type CartService interface {
-	CreateShoppingSession() (int, error)
-	AddItem(models.Item) (int, error)
-	IncreaseItemQuantity(models.Item) (int, error)
-	DecreaseItemQuantity(models.Item) (int, error)
-	RemoveItem(models.DeletedItem) (int, error)
-	UpdateQuantity(int) (models.Item, error)
-	ViewCartItem(int) ([]models.Item, error)
-	Checkout()
+	CreateShoppingSession(context.Context, models.Session) (int, error)
+	AddItem(context.Context, models.Item) (int, error)
+	IncreaseItemQuantity(context.Context, models.Item) (int, error)
+	DecreaseItemQuantity(context.Context, models.Item) (int, error)
+	RemoveItem(context.Context, models.DeletedItem) (int, error)
+	ViewCartItem(context.Context, int) ([]models.Item, error)
+	Checkout(context.Context)
 }

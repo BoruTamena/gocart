@@ -133,20 +133,21 @@ WITH delete_item AS (
     DELETE FROM cart_item
     WHERE session_id = $1 AND product_id = $2
     RETURNING session_id
-) ,
+),
 updated_session AS (
-    UPDATE  shopping_session 
-    SET total= (
-        SELECT COALESCE(SUM(quantity),0)
+    UPDATE shopping_session 
+    SET total = (
+        SELECT COALESCE(SUM(quantity), 0)
         FROM cart_item
-        WHERE session_id=$2
+        WHERE session_id = $1
     )
-    WHERE id=$2 RETURNING id,total
+    WHERE id = $1
+    RETURNING id, total
 )
 UPDATE shopping_session 
-SET total=0 
-WHERE id =$2 AND NOT EXISTS  (
-   SELECT 1 FROM cart_item WHERE session_id = $2
+SET total = 0 
+WHERE id = $1 AND NOT EXISTS (
+    SELECT 1 FROM cart_item WHERE session_id = $1
 )
 `
 
@@ -161,20 +162,21 @@ type RemoveCartItemParams struct {
 //	    DELETE FROM cart_item
 //	    WHERE session_id = $1 AND product_id = $2
 //	    RETURNING session_id
-//	) ,
+//	),
 //	updated_session AS (
-//	    UPDATE  shopping_session
-//	    SET total= (
-//	        SELECT COALESCE(SUM(quantity),0)
+//	    UPDATE shopping_session
+//	    SET total = (
+//	        SELECT COALESCE(SUM(quantity), 0)
 //	        FROM cart_item
-//	        WHERE session_id=$2
+//	        WHERE session_id = $1
 //	    )
-//	    WHERE id=$2 RETURNING id,total
+//	    WHERE id = $1
+//	    RETURNING id, total
 //	)
 //	UPDATE shopping_session
-//	SET total=0
-//	WHERE id =$2 AND NOT EXISTS  (
-//	   SELECT 1 FROM cart_item WHERE session_id = $2
+//	SET total = 0
+//	WHERE id = $1 AND NOT EXISTS (
+//	    SELECT 1 FROM cart_item WHERE session_id = $1
 //	)
 func (q *Queries) RemoveCartItem(ctx context.Context, arg RemoveCartItemParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, removeCartItem, arg.Column1, arg.Column2)
@@ -208,7 +210,7 @@ func (q *Queries) UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItem
 	return err
 }
 
-const viewCurrentCartITem = `-- name: ViewCurrentCartITem :exec
+const viewCurrentCartITem = `-- name: ViewCurrentCartITem :many
 SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
 WHERE product.id IN (
     SELECT product_id 
@@ -225,7 +227,35 @@ WHERE product.id IN (
 //	    FROM cart_item
 //	    WHERE session_id=$1
 //	)
-func (q *Queries) ViewCurrentCartITem(ctx context.Context, sessionID sql.NullInt32) error {
-	_, err := q.db.ExecContext(ctx, viewCurrentCartITem, sessionID)
-	return err
+func (q *Queries) ViewCurrentCartITem(ctx context.Context, sessionID sql.NullInt32) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, viewCurrentCartITem, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Sku,
+			&i.Category,
+			&i.Price,
+			&i.DiscountID,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

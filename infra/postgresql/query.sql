@@ -28,20 +28,21 @@ WITH delete_item AS (
     DELETE FROM cart_item
     WHERE session_id = $1 AND product_id = $2
     RETURNING session_id
-) ,
+),
 updated_session AS (
-    UPDATE  shopping_session 
-    SET total= (
-        SELECT COALESCE(SUM(quantity),0)
+    UPDATE shopping_session 
+    SET total = (
+        SELECT COALESCE(SUM(quantity), 0)
         FROM cart_item
-        WHERE session_id=$2
+        WHERE session_id = $1
     )
-    WHERE id=$2 RETURNING id,total
+    WHERE id = $1
+    RETURNING id, total
 )
 UPDATE shopping_session 
-SET total=0 
-WHERE id =$2 AND NOT EXISTS  (
-   SELECT 1 FROM cart_item WHERE session_id = $2
+SET total = 0 
+WHERE id = $1 AND NOT EXISTS (
+    SELECT 1 FROM cart_item WHERE session_id = $1
 );
 
 
@@ -51,7 +52,7 @@ SET quantity = $3, modified_at = CURRENT_TIMESTAMP
 WHERE session_id = $1 AND product_id = $2
 RETURNING id ;
 
--- name: ViewCurrentCartITem :exec 
+-- name: ViewCurrentCartITem :many
 SELECT * FROM  product
 WHERE product.id IN (
     SELECT product_id 
