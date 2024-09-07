@@ -16,15 +16,17 @@ RETURNING id;
 INSERT INTO cart_item (session_id, product_id, quantity, created_at, modified_at)
 VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (session_id, product_id) DO UPDATE 
-SET quantity = CASE WHEN quantity <  10  THEN cart_item.quantity + EXCLUDED.quantity,
+SET quantity = CASE WHEN cart_item.quantity <  10  THEN cart_item.quantity + EXCLUDED.quantity
     ELSE 10 
-END
+END,
 modified_at = CURRENT_TIMESTAMP 
-RETURNING quantity;
+RETURNING cart_item.quantity;
 
--- name: RemoveCartItem :exec
+
+-- name: RemoveCartItem :execrows
 DELETE FROM cart_item
 WHERE session_id = $1 AND product_id = $2;
+
 
 
 -- name: UpdateCartItemQuantity :exec

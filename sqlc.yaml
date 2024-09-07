@@ -1,14 +1,14 @@
 version: "2"
 sql:
-- schema: "data/migirations"
-  queries: "data/query.sql"
+- schema: "infra/postgresql/schema.sql"
+  queries: "infra/postgresql/query.sql"
   engine: "postgresql"
   database:
     uri:  postgresql://postgres:root@localhost:5432/cart_db
   gen:
     go: 
       package: "rsqlc"
-      out: "data/rsqlc"
+      out: "infra/rsqlc"
       sql_package : database/sql
       emit_db_tags: true
       emit_interface: true 
