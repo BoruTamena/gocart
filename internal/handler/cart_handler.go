@@ -39,7 +39,12 @@ func (ch cartHandler) AddItemToCart(c *gin.Context) {
 	// user don't have shopping session before
 	if Item.SessionId == 0 {
 		// creating new shopping session for user
-		session_id, err := ch.Service.CreateShoppingSession()
+
+		session_mdl := models.Session{
+			ID:     1,
+			UserID: 2,
+		}
+		session_id, err := ch.Service.CreateShoppingSession(c.Request.Context(), session_mdl)
 
 		if err != nil {
 
@@ -52,7 +57,7 @@ func (ch cartHandler) AddItemToCart(c *gin.Context) {
 
 	}
 
-	quantity, err := ch.Service.AddItem(Item)
+	quantity, err := ch.Service.AddItem(c.Request.Context(), Item)
 
 	if err != nil {
 
@@ -84,7 +89,7 @@ func (ch cartHandler) RemoveItemFromCart(c *gin.Context) {
 	}
 
 	// removing item
-	affected_row, err := ch.Service.RemoveItem(Deleted_item)
+	affected_row, err := ch.Service.RemoveItem(c.Request.Context(), Deleted_item)
 
 	if err != nil {
 		// setting error
@@ -112,7 +117,7 @@ func (ch cartHandler) ViewCartItems(c *gin.Context) {
 
 	}
 
-	items, err := ch.Service.ViewCartItem(userID)
+	items, err := ch.Service.ViewCartItem(c.Request.Context(), userID)
 
 	if err != nil {
 		// setting error
@@ -135,7 +140,7 @@ func (ch cartHandler) AddItemQuantity(c *gin.Context) {
 
 	}
 
-	affected_row, err := ch.Service.IncreaseItemQuantity(item)
+	affected_row, err := ch.Service.IncreaseItemQuantity(c.Request.Context(), item)
 
 	if err != nil {
 		// setting error
@@ -157,7 +162,7 @@ func (ch cartHandler) SubtractItemQuantity(c *gin.Context) {
 
 	}
 
-	affected_row, err := ch.Service.DecreaseItemQuantity(item)
+	affected_row, err := ch.Service.DecreaseItemQuantity(c.Request.Context(), item)
 
 	if err != nil {
 		// setting error

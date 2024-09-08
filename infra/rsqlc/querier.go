@@ -20,13 +20,13 @@ type Querier interface {
 	//  END,
 	//  modified_at = CURRENT_TIMESTAMP
 	//  RETURNING cart_item.quantity
-	AddCartItem(ctx context.Context, arg AddCartItemParams) error
+	AddCartItem(ctx context.Context, arg AddCartItemParams) (int32, error)
 	//CreateShoppingSession
 	//
 	//  INSERT INTO shopping_session (user_id, total, created_at, modified_at)
 	//  VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	//  RETURNING id
-	CreateShoppingSession(ctx context.Context, userID sql.NullInt32) error
+	CreateShoppingSession(ctx context.Context, userID sql.NullInt32) (int32, error)
 	//DecreaseQuantity
 	//
 	//  UPDATE cart_item

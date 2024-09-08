@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const addCartItem = `-- name: AddCartItem :exec
+const addCartItem = `-- name: AddCartItem :one
 INSERT INTO cart_item (session_id, product_id, quantity, created_at, modified_at)
 VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (session_id, product_id) DO UPDATE 
@@ -37,12 +37,14 @@ type AddCartItemParams struct {
 //	END,
 //	modified_at = CURRENT_TIMESTAMP
 //	RETURNING cart_item.quantity
-func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) error {
-	_, err := q.db.ExecContext(ctx, addCartItem, arg.SessionID, arg.ProductID, arg.Quantity)
-	return err
+func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, addCartItem, arg.SessionID, arg.ProductID, arg.Quantity)
+	var quantity int32
+	err := row.Scan(&quantity)
+	return quantity, err
 }
 
-const createShoppingSession = `-- name: CreateShoppingSession :exec
+const createShoppingSession = `-- name: CreateShoppingSession :one
 INSERT INTO shopping_session (user_id, total, created_at, modified_at)
 VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING id
@@ -53,9 +55,11 @@ RETURNING id
 //	INSERT INTO shopping_session (user_id, total, created_at, modified_at)
 //	VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 //	RETURNING id
-func (q *Queries) CreateShoppingSession(ctx context.Context, userID sql.NullInt32) error {
-	_, err := q.db.ExecContext(ctx, createShoppingSession, userID)
-	return err
+func (q *Queries) CreateShoppingSession(ctx context.Context, userID sql.NullInt32) (int32, error) {
+	row := q.db.QueryRowContext(ctx, createShoppingSession, userID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }
 
 const decreaseQuantity = `-- name: DecreaseQuantity :exec

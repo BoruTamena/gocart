@@ -19,34 +19,36 @@ func NewCartRepository(database repository.DataBase) repository.CartRepository {
 }
 
 // full-stack
-func (cr cartRepository) InsertShoppingSession(c context.Context, user_id sql.NullInt32) error {
+func (cr cartRepository) InsertShoppingSession(c context.Context, user_id sql.NullInt32) (int, error) {
 
 	query := rsqlc.New(cr.db.GetDB())
 
 	defer cr.db.Close()
 
-	if err := query.CreateShoppingSession(c, user_id); err != nil {
-		return err
+	session_id, err := query.CreateShoppingSession(c, user_id)
+
+	if err != nil {
+		return 0, err
 	}
 
-	return nil
+	return int(session_id), nil
 
 }
 
 // full-stack
-func (cr cartRepository) InserCartItem(c context.Context, item_param rsqlc.AddCartItemParams) error {
+func (cr cartRepository) InserCartItem(c context.Context, item_param rsqlc.AddCartItemParams) (int, error) {
 
 	query := rsqlc.New(cr.db.GetDB())
 
 	defer cr.db.Close()
 
-	err := query.AddCartItem(c, item_param)
+	quantity, err := query.AddCartItem(c, item_param)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return int(quantity), nil
 
 }
 
@@ -79,19 +81,19 @@ func (cr cartRepository) DecreaseQuantity(c context.Context, quantity_param rsql
 }
 
 // full-stack
-func (cr cartRepository) DeleteCartItem(c context.Context, item_param rsqlc.RemoveCartItemParams) error {
+func (cr cartRepository) DeleteCartItem(c context.Context, item_param rsqlc.RemoveCartItemParams) (int, error) {
 
 	query := rsqlc.New(cr.db.GetDB())
 
 	defer cr.db.Close()
 
-	_, err := query.RemoveCartItem(c, item_param)
+	affected_row, err := query.RemoveCartItem(c, item_param)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return int(affected_row), nil
 }
 
 func (cr cartRepository) SelectCartItem(c context.Context, session_id sql.NullInt32) ([]rsqlc.Product, error) {
