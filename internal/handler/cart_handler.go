@@ -21,7 +21,14 @@ func NewCartHandler(engine *gin.Engine, service service.CartService) *cartHandle
 	}
 }
 
-func InitHandler() {
+func (ch cartHandler) InitHandler() {
+	api := ch.Router.Group("cart")
+
+	api.GET("", ch.ViewCartItems)
+	api.POST("/item", ch.AddItemToCart)
+	api.POST("/increment", ch.AddItemQuantity)
+	api.POST("/decrement", ch.SubtractItemQuantity)
+	api.DELETE("/remove", ch.RemoveItemFromCart)
 
 }
 

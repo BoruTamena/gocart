@@ -113,4 +113,4 @@ func (cr cartRepository) SelectCartItem(c context.Context, session_id sql.NullIn
 
 }
 
-func (cr cartRepository) CartCheckOut(c context.Context)
+func (cr cartRepository) CartCheckOut(c context.Context) {}
