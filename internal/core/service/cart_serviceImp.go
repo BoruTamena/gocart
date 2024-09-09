@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 
 	"github.com/BoruTamena/infra/rsqlc"
 	"github.com/BoruTamena/internal/core/models"
@@ -122,9 +123,11 @@ func (cs cartService) ViewCartItem(c context.Context, session_id int) ([]rsqlc.P
 	*/
 	id := sql.NullInt32{Int32: int32(session_id), Valid: true}
 
+	log.Println("session Id", id)
 	product, err := cs.Rep.SelectCartItem(c, id)
 
 	if err != nil {
+		log.Println("Db:", err)
 		return nil, err
 	}
 

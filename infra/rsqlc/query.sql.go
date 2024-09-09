@@ -11,13 +11,13 @@ import (
 )
 
 const addCartItem = `-- name: AddCartItem :one
-INSERT INTO cart_item (session_id, product_id, quantity, created_at, modified_at)
+INSERT INTO cart_item ("session_id", "product_id", "quantity", "created_at", "modified_at")
 VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT (session_id, product_id) DO UPDATE 
-SET quantity = CASE WHEN cart_item.quantity <  10  THEN cart_item.quantity + EXCLUDED.quantity
+ON CONFLICT ("session_id", "product_id") DO UPDATE 
+SET quantity = CASE WHEN cart_item.quantity < 10 THEN cart_item.quantity + EXCLUDED.quantity
     ELSE 10 
 END,
-modified_at = CURRENT_TIMESTAMP 
+"modified_at" = CURRENT_TIMESTAMP 
 RETURNING cart_item.quantity
 `
 
@@ -29,13 +29,13 @@ type AddCartItemParams struct {
 
 // AddCartItem
 //
-//	INSERT INTO cart_item (session_id, product_id, quantity, created_at, modified_at)
+//	INSERT INTO cart_item ("session_id", "product_id", "quantity", "created_at", "modified_at")
 //	VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-//	ON CONFLICT (session_id, product_id) DO UPDATE
-//	SET quantity = CASE WHEN cart_item.quantity <  10  THEN cart_item.quantity + EXCLUDED.quantity
+//	ON CONFLICT ("session_id", "product_id") DO UPDATE
+//	SET quantity = CASE WHEN cart_item.quantity < 10 THEN cart_item.quantity + EXCLUDED.quantity
 //	    ELSE 10
 //	END,
-//	modified_at = CURRENT_TIMESTAMP
+//	"modified_at" = CURRENT_TIMESTAMP
 //	RETURNING cart_item.quantity
 func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) (int32, error) {
 	row := q.db.QueryRowContext(ctx, addCartItem, arg.SessionID, arg.ProductID, arg.Quantity)
@@ -45,14 +45,14 @@ func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) (int32
 }
 
 const createShoppingSession = `-- name: CreateShoppingSession :one
-INSERT INTO shopping_session (user_id, total, created_at, modified_at)
+INSERT INTO shopping_session ("user_id", "total", "created_at", "modified_at")
 VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING id
 `
 
 // CreateShoppingSession
 //
-//	INSERT INTO shopping_session (user_id, total, created_at, modified_at)
+//	INSERT INTO shopping_session ("user_id", "total", "created_at", "modified_at")
 //	VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 //	RETURNING id
 func (q *Queries) CreateShoppingSession(ctx context.Context, userID sql.NullInt32) (int32, error) {
@@ -63,8 +63,8 @@ func (q *Queries) CreateShoppingSession(ctx context.Context, userID sql.NullInt3
 }
 
 const decreaseQuantity = `-- name: DecreaseQuantity :exec
-UPDATE cart_item 
-SET quantity=quantity-1
+UPDATE cart_item
+SET quantity  = quantity - 1
 WHERE session_id = $1 AND product_id = $2 AND quantity > 1
 `
 
@@ -76,7 +76,7 @@ type DecreaseQuantityParams struct {
 // DecreaseQuantity
 //
 //	UPDATE cart_item
-//	SET quantity=quantity-1
+//	SET quantity  = quantity - 1
 //	WHERE session_id = $1 AND product_id = $2 AND quantity > 1
 func (q *Queries) DecreaseQuantity(ctx context.Context, arg DecreaseQuantityParams) error {
 	_, err := q.db.ExecContext(ctx, decreaseQuantity, arg.SessionID, arg.ProductID)
@@ -112,8 +112,8 @@ func (q *Queries) GetActiveSession(ctx context.Context, userID sql.NullInt32) (S
 }
 
 const increaseQuantity = `-- name: IncreaseQuantity :exec
-UPDATE cart_item 
-SET quantity=quantity+1
+UPDATE cart_item
+SET quantity = quantity + 1
 WHERE session_id = $1 AND product_id = $2
 `
 
@@ -125,7 +125,7 @@ type IncreaseQuantityParams struct {
 // IncreaseQuantity
 //
 //	UPDATE cart_item
-//	SET quantity=quantity+1
+//	SET quantity = quantity + 1
 //	WHERE session_id = $1 AND product_id = $2
 func (q *Queries) IncreaseQuantity(ctx context.Context, arg IncreaseQuantityParams) error {
 	_, err := q.db.ExecContext(ctx, increaseQuantity, arg.SessionID, arg.ProductID)
@@ -136,10 +136,10 @@ const removeCartItem = `-- name: RemoveCartItem :execrows
 WITH delete_item AS (
     DELETE FROM cart_item
     WHERE session_id = $1 AND product_id = $2
-    RETURNING session_id
+    RETURNING "session_id"
 ),
 updated_session AS (
-    UPDATE shopping_session 
+    UPDATE shopping_session
     SET total = (
         SELECT COALESCE(SUM(quantity), 0)
         FROM cart_item
@@ -165,7 +165,7 @@ type RemoveCartItemParams struct {
 //	WITH delete_item AS (
 //	    DELETE FROM cart_item
 //	    WHERE session_id = $1 AND product_id = $2
-//	    RETURNING session_id
+//	    RETURNING "session_id"
 //	),
 //	updated_session AS (
 //	    UPDATE shopping_session
@@ -194,7 +194,7 @@ const updateCartItemQuantity = `-- name: UpdateCartItemQuantity :exec
 UPDATE cart_item
 SET quantity = $3, modified_at = CURRENT_TIMESTAMP
 WHERE session_id = $1 AND product_id = $2
-RETURNING id
+RETURNING "id"
 `
 
 type UpdateCartItemQuantityParams struct {
@@ -208,31 +208,31 @@ type UpdateCartItemQuantityParams struct {
 //	UPDATE cart_item
 //	SET quantity = $3, modified_at = CURRENT_TIMESTAMP
 //	WHERE session_id = $1 AND product_id = $2
-//	RETURNING id
+//	RETURNING "id"
 func (q *Queries) UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) error {
 	_, err := q.db.ExecContext(ctx, updateCartItemQuantity, arg.SessionID, arg.ProductID, arg.Quantity)
 	return err
 }
 
-const viewCurrentCartITem = `-- name: ViewCurrentCartITem :many
-SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
-WHERE product.id IN (
+const viewCurrentCartItem = `-- name: ViewCurrentCartItem :many
+SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM product
+WHERE id IN (
     SELECT product_id 
-    FROM cart_item 
-    WHERE session_id=$1
+    FROM  cart_item
+    WHERE session_id = $1
 )
 `
 
-// ViewCurrentCartITem
+// ViewCurrentCartItem
 //
-//	SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
-//	WHERE product.id IN (
+//	SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM product
+//	WHERE id IN (
 //	    SELECT product_id
-//	    FROM cart_item
-//	    WHERE session_id=$1
+//	    FROM  cart_item
+//	    WHERE session_id = $1
 //	)
-func (q *Queries) ViewCurrentCartITem(ctx context.Context, sessionID sql.NullInt32) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, viewCurrentCartITem, sessionID)
+func (q *Queries) ViewCurrentCartItem(ctx context.Context, sessionID sql.NullInt32) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, viewCurrentCartItem, sessionID)
 	if err != nil {
 		return nil, err
 	}

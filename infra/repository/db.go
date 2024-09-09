@@ -11,7 +11,7 @@ import (
 const (
 	host     = "localhost"
 	port     = 5432
-	dbname   = "user_db"
+	dbname   = "cart_go_db"
 	user     = "postgres"
 	password = "root"
 )

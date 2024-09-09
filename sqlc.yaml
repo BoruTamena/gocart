@@ -1,10 +1,11 @@
 version: "2"
 sql:
-- schema: "infra/postgresql/schema.sql"
-  queries: "infra/postgresql/query.sql"
-  engine: "postgresql"
+- engine: "postgresql"
+  queries: "infra/postgresql/query.sql" 
+  schema: "infra/postgresql/schema.sql"
   database:
-    uri:  postgresql://postgres:root@localhost:5432/cart_db
+    uri:  postgresql://postgres:root@localhost:5432/cart_go_db?sslmode=disable
+
   gen:
     go: 
       package: "rsqlc"
@@ -16,4 +17,7 @@ sql:
       emit_json_tags: true 
       emit_sql_as_comment: true 
 
+  
+
+  
   

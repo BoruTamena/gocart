@@ -72,7 +72,7 @@ type ShoppingSession struct {
 	ModifiedAt sql.NullTime   `db:"modified_at" json:"modified_at"`
 }
 
-type User struct {
+type Users struct {
 	ID         int32        `db:"id" json:"id"`
 	Username   string       `db:"username" json:"username"`
 	Email      string       `db:"email" json:"email"`

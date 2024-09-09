@@ -14,7 +14,7 @@ const (
 	dbPort     = 5432
 	dbUser     = "postgres"
 	dbPassword = "root"
-	dbName     = "cart_db"
+	dbName     = "cart_go_db"
 )
 
 func Seed_Data() {
@@ -37,7 +37,7 @@ func Seed_Data() {
 	fmt.Println("Successfully connected to the database!")
 
 	// Seed users
-	_, err = db.Exec(`INSERT INTO "user" (username, email, password) 
+	_, err = db.Exec(`INSERT INTO "users" (username, email, password) 
                       VALUES ($1, $2, $3), ($4, $5, $6)`,
 		"john_doe", "john@example.com", "password1", // User 1
 		"jane_doe", "jane@example.com", "password2") // User 2
@@ -116,3 +116,7 @@ func Seed_Data() {
 	}
 	fmt.Println("Order items seeded successfully")
 }
+
+// func main() {
+// 	Seed_Data()
+// }

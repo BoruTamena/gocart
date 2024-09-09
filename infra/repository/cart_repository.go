@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	"github.com/BoruTamena/infra/rsqlc"
 	"github.com/BoruTamena/internal/core/port/repository"
@@ -23,7 +24,7 @@ func (cr cartRepository) InsertShoppingSession(c context.Context, user_id sql.Nu
 
 	query := rsqlc.New(cr.db.GetDB())
 
-	defer cr.db.Close()
+	// defer cr.db.Close()
 
 	session_id, err := query.CreateShoppingSession(c, user_id)
 
@@ -40,7 +41,7 @@ func (cr cartRepository) InserCartItem(c context.Context, item_param rsqlc.AddCa
 
 	query := rsqlc.New(cr.db.GetDB())
 
-	defer cr.db.Close()
+	// defer cr.db.Close()
 
 	quantity, err := query.AddCartItem(c, item_param)
 
@@ -56,7 +57,7 @@ func (cr cartRepository) IncreaseQuantity(c context.Context, quantity_param rsql
 
 	query := rsqlc.New(cr.db.GetDB())
 
-	defer cr.db.Close()
+	// defer cr.db.Close()
 
 	err := query.IncreaseQuantity(c, quantity_param)
 	if err != nil {
@@ -70,7 +71,7 @@ func (cr cartRepository) IncreaseQuantity(c context.Context, quantity_param rsql
 func (cr cartRepository) DecreaseQuantity(c context.Context, quantity_param rsqlc.DecreaseQuantityParams) error {
 	query := rsqlc.New(cr.db.GetDB())
 
-	defer cr.db.Close()
+	// defer cr.db.Close()
 
 	err := query.DecreaseQuantity(c, quantity_param)
 	if err != nil {
@@ -85,7 +86,7 @@ func (cr cartRepository) DeleteCartItem(c context.Context, item_param rsqlc.Remo
 
 	query := rsqlc.New(cr.db.GetDB())
 
-	defer cr.db.Close()
+	// defer cr.db.Close()
 
 	affected_row, err := query.RemoveCartItem(c, item_param)
 
@@ -103,9 +104,11 @@ func (cr cartRepository) SelectCartItem(c context.Context, session_id sql.NullIn
 	defer cr.db.Close()
 
 	// product managers
-	product, err := query.ViewCurrentCartITem(c, session_id)
+	product, err := query.ViewCurrentCartItem(c, session_id)
 
 	if err != nil {
+
+		log.Println("error is come from here...", err)
 		return nil, err
 	}
 

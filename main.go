@@ -11,6 +11,7 @@ import (
 
 func main() {
 
+	//
 	Router := gin.Default()
 
 	db, err := repository.NewDB()
@@ -27,7 +28,7 @@ func main() {
 
 	cart_handler.InitHandler()
 
-	defer db.Close()
+	// defer db.Close()
 
 	// serving the server on port 8000
 	if err := Router.Run(":8000"); err != nil {

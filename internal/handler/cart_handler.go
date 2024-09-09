@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -64,6 +65,8 @@ func (ch cartHandler) AddItemToCart(c *gin.Context) {
 
 	}
 
+	log.Print(Item)
+
 	quantity, err := ch.Service.AddItem(c.Request.Context(), Item)
 
 	if err != nil {
@@ -124,11 +127,14 @@ func (ch cartHandler) ViewCartItems(c *gin.Context) {
 
 	}
 
+	log.Println("user id is ", userID)
 	items, err := ch.Service.ViewCartItem(c.Request.Context(), userID)
 
 	if err != nil {
 		// setting error
 		c.Error(err)
+
+		log.Fatal(err.Error())
 		return
 	}
 

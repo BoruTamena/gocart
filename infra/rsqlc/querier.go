@@ -12,25 +12,25 @@ import (
 type Querier interface {
 	//AddCartItem
 	//
-	//  INSERT INTO cart_item (session_id, product_id, quantity, created_at, modified_at)
+	//  INSERT INTO cart_item ("session_id", "product_id", "quantity", "created_at", "modified_at")
 	//  VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-	//  ON CONFLICT (session_id, product_id) DO UPDATE
-	//  SET quantity = CASE WHEN cart_item.quantity <  10  THEN cart_item.quantity + EXCLUDED.quantity
+	//  ON CONFLICT ("session_id", "product_id") DO UPDATE
+	//  SET quantity = CASE WHEN cart_item.quantity < 10 THEN cart_item.quantity + EXCLUDED.quantity
 	//      ELSE 10
 	//  END,
-	//  modified_at = CURRENT_TIMESTAMP
+	//  "modified_at" = CURRENT_TIMESTAMP
 	//  RETURNING cart_item.quantity
 	AddCartItem(ctx context.Context, arg AddCartItemParams) (int32, error)
 	//CreateShoppingSession
 	//
-	//  INSERT INTO shopping_session (user_id, total, created_at, modified_at)
+	//  INSERT INTO shopping_session ("user_id", "total", "created_at", "modified_at")
 	//  VALUES ($1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	//  RETURNING id
 	CreateShoppingSession(ctx context.Context, userID sql.NullInt32) (int32, error)
 	//DecreaseQuantity
 	//
 	//  UPDATE cart_item
-	//  SET quantity=quantity-1
+	//  SET quantity  = quantity - 1
 	//  WHERE session_id = $1 AND product_id = $2 AND quantity > 1
 	DecreaseQuantity(ctx context.Context, arg DecreaseQuantityParams) error
 	//GetActiveSession
@@ -44,7 +44,7 @@ type Querier interface {
 	//IncreaseQuantity
 	//
 	//  UPDATE cart_item
-	//  SET quantity=quantity+1
+	//  SET quantity = quantity + 1
 	//  WHERE session_id = $1 AND product_id = $2
 	IncreaseQuantity(ctx context.Context, arg IncreaseQuantityParams) error
 	//RemoveCartItem
@@ -52,7 +52,7 @@ type Querier interface {
 	//  WITH delete_item AS (
 	//      DELETE FROM cart_item
 	//      WHERE session_id = $1 AND product_id = $2
-	//      RETURNING session_id
+	//      RETURNING "session_id"
 	//  ),
 	//  updated_session AS (
 	//      UPDATE shopping_session
@@ -75,17 +75,17 @@ type Querier interface {
 	//  UPDATE cart_item
 	//  SET quantity = $3, modified_at = CURRENT_TIMESTAMP
 	//  WHERE session_id = $1 AND product_id = $2
-	//  RETURNING id
+	//  RETURNING "id"
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) error
-	//ViewCurrentCartITem
+	//ViewCurrentCartItem
 	//
-	//  SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM  product
-	//  WHERE product.id IN (
+	//  SELECT id, name, description, sku, category, price, discount_id, created_at, modified_at FROM product
+	//  WHERE id IN (
 	//      SELECT product_id
-	//      FROM cart_item
-	//      WHERE session_id=$1
+	//      FROM  cart_item
+	//      WHERE session_id = $1
 	//  )
-	ViewCurrentCartITem(ctx context.Context, sessionID sql.NullInt32) ([]Product, error)
+	ViewCurrentCartItem(ctx context.Context, sessionID sql.NullInt32) ([]Product, error)
 }
 
 var _ Querier = (*Queries)(nil)
