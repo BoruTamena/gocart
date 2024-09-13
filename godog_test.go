@@ -200,6 +200,54 @@ func (ft *featureTest) RemoveCartItem(S_id, P_id int) error {
 
 // update item step definition
 
+func (ft *featureTest) RegisterUpdateItem(S_id, P_id int) error {
+
+	ft.item = Item{
+		Session_id: S_id,
+		Product_id: P_id,
+	}
+
+	return nil
+
+}
+
+func (ft *featureTest) DecreaseQuantity() error {
+
+	b, err := ft.JsonMarshaller(ft.item)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := ft.server.Client().Post(ft.server.URL+"/cart/decrement", "application/json",
+		bytes.NewBuffer(b))
+
+	if err != nil {
+		return err
+	}
+	ft.resp = resp
+	return nil
+
+}
+
+func (ft *featureTest) IncreaseQuantity() error {
+
+	b, err := ft.JsonMarshaller(ft.item)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := ft.server.Client().Post(ft.server.URL+"/cart/increment", "application/json",
+		bytes.NewBuffer(b))
+
+	if err != nil {
+		return err
+	}
+	ft.resp = resp
+	return nil
+}
+
 func TestFeature(t *testing.T) {
 
 	suite := godog.TestSuite{
@@ -229,7 +277,11 @@ func InitializeScenario(c *godog.ScenarioContext) {
 			return c, nil
 		})
 
-	c.Step(`^I add item a new product with a product_id,session_id and quantity (\d+),(\d+),(\d+),$`, ft.RegisterItem)
+	c.Step(`^I add item a new product with a (\d+),(\d+) and (\d+),$`, ft.RegisterItem)
 	c.Step(`^the system should add a new product into cart and return "([^"]*)"\.$`, ft.AddCartItem)
+
+	//update step
+	c.Step(`^I update item in cart with (\d+),  (\d+)  by increasing quantity,$`, ft.RegisterUpdateItem)
+	c.Step(`^The system should increase the item quantity and update cumulative item\.$`, ft.IncreaseQuantity)
 
 }
