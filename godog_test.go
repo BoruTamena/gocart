@@ -58,6 +58,19 @@ func (ft *featureTest) resetResponse(*godog.Scenario) {
 
 }
 
+func (ft *featureTest) JsonMarshaller(item Item) ([]byte, error) {
+
+	js_item, err := json.Marshal(item)
+
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	return js_item, nil
+
+}
+
 func (ft *featureTest) GetHandler() *gin.Engine {
 	db, err := repository.NewDB()
 
@@ -78,13 +91,7 @@ func (ft *featureTest) GetHandler() *gin.Engine {
 
 }
 
-func (ft *featureTest) JsonMarshaller(item Item) []byte {
-
-	js_item, _ := json.Marshal(item)
-
-	return js_item
-
-}
+// add ,view and remove item step definition
 
 func (ft *featureTest) RegisterItem(product_id, session_id, quantity int) error {
 
@@ -104,6 +111,7 @@ func (ft *featureTest) RegisterItem(product_id, session_id, quantity int) error 
 }
 
 func (ft *featureTest) RegisterDeleteItem(P_id, S_id int) error {
+
 	if P_id != 0 && S_id != 0 {
 
 		ft.item = Item{
@@ -112,7 +120,6 @@ func (ft *featureTest) RegisterDeleteItem(P_id, S_id int) error {
 		}
 
 		return nil
-
 	}
 
 	return errors.New("can't register item ")
@@ -131,9 +138,15 @@ func (ft *featureTest) ViewCartItem(session_id int) error {
 	params.Add("session_id", "1")
 
 	Url.RawQuery = params.Encode()
-	// c.server = httptest.NewServer(handler)
+
+	b, err := ft.JsonMarshaller(ft.item)
+
+	if err != nil {
+		return err
+	}
+
 	resp, err := ft.server.Client().Post(Url.String(), "application/json",
-		bytes.NewBuffer(ft.JsonMarshaller(ft.item)))
+		bytes.NewBuffer(b))
 
 	if err != nil {
 		return err
@@ -146,31 +159,46 @@ func (ft *featureTest) ViewCartItem(session_id int) error {
 func (ft *featureTest) AddCartItem(want string) error {
 
 	// adding new item to cart
+	js, err := ft.JsonMarshaller(ft.item)
+	if err != nil {
+		return err
+	}
 
-	response, err := ft.server.Client().Post(ft.server.URL+"/cart/item",
-		"application/json", bytes.NewBuffer(ft.JsonMarshaller(ft.item)))
+	log.Print(ft.item)
+	resp, err := ft.server.Client().Post(ft.server.URL+"/cart/item",
+		"application/json", bytes.NewBuffer(js))
 
 	if err != nil {
 		return err
 	}
-	ft.resp = response
+	log.Print("response", resp)
+	ft.resp = resp
+	log.Print("response body log", ft.resp)
 	return nil
 
 }
 
 func (ft *featureTest) RemoveCartItem(S_id, P_id int) error {
-	// removing cart item
 
+	b, err := ft.JsonMarshaller(ft.item)
+
+	if err != nil {
+		return err
+	}
+	// removing cart item
 	resp, err := ft.server.Client().Post(ft.server.URL+"/cart/remove",
-		"application/json", bytes.NewBuffer(ft.JsonMarshaller(ft.item)))
+		"application/json", bytes.NewBuffer(b))
 
 	if err != nil {
 		return err
 	}
 	ft.resp = resp
+
 	return nil
 
 }
+
+// update item step definition
 
 func TestFeature(t *testing.T) {
 
