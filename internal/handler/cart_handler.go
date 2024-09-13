@@ -10,19 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type cartHandler struct {
+type CartHandler struct {
 	Router  *gin.Engine
 	Service service.CartService
 }
 
-func NewCartHandler(engine *gin.Engine, service service.CartService) *cartHandler {
-	return &cartHandler{
+func NewCartHandler(engine *gin.Engine, service service.CartService) *CartHandler {
+	return &CartHandler{
 		Router:  engine,
 		Service: service,
 	}
 }
 
-func (ch cartHandler) InitHandler() {
+func (ch CartHandler) InitHandler() {
 	api := ch.Router.Group("cart")
 
 	api.GET("", ch.ViewCartItems)
@@ -33,7 +33,7 @@ func (ch cartHandler) InitHandler() {
 
 }
 
-func (ch cartHandler) AddItemToCart(c *gin.Context) {
+func (ch CartHandler) AddItemToCart(c *gin.Context) {
 
 	var Item models.Item
 
@@ -87,7 +87,7 @@ func (ch cartHandler) AddItemToCart(c *gin.Context) {
 
 }
 
-func (ch cartHandler) RemoveItemFromCart(c *gin.Context) {
+func (ch CartHandler) RemoveItemFromCart(c *gin.Context) {
 
 	var Deleted_item models.DeletedItem
 
@@ -114,11 +114,11 @@ func (ch cartHandler) RemoveItemFromCart(c *gin.Context) {
 	}
 }
 
-func (ch cartHandler) ViewCartItems(c *gin.Context) {
+func (ch CartHandler) ViewCartItems(c *gin.Context) {
 
-	user_id := c.Query("user_id")
+	session_id := c.Query("session_id")
 
-	userID, err := strconv.Atoi(user_id)
+	sessionID, err := strconv.Atoi(session_id)
 
 	if err != nil {
 		// setting error
@@ -127,8 +127,7 @@ func (ch cartHandler) ViewCartItems(c *gin.Context) {
 
 	}
 
-	log.Println("user id is ", userID)
-	items, err := ch.Service.ViewCartItem(c.Request.Context(), userID)
+	items, err := ch.Service.ViewCartItem(c.Request.Context(), sessionID)
 
 	if err != nil {
 		// setting error
@@ -142,7 +141,7 @@ func (ch cartHandler) ViewCartItems(c *gin.Context) {
 
 }
 
-func (ch cartHandler) AddItemQuantity(c *gin.Context) {
+func (ch CartHandler) AddItemQuantity(c *gin.Context) {
 
 	var item models.Item
 
@@ -164,7 +163,7 @@ func (ch cartHandler) AddItemQuantity(c *gin.Context) {
 	c.JSON(http.StatusAccepted, gin.H{"message": "item quantity increase", "row": affected_row})
 }
 
-func (ch cartHandler) SubtractItemQuantity(c *gin.Context) {
+func (ch CartHandler) SubtractItemQuantity(c *gin.Context) {
 
 	var item models.Item
 
@@ -187,6 +186,6 @@ func (ch cartHandler) SubtractItemQuantity(c *gin.Context) {
 
 }
 
-func (ch cartHandler) CheckoutCartItems(c *gin.Context) {
+func (ch CartHandler) CheckoutCartItems(c *gin.Context) {
 
 }
