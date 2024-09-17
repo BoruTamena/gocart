@@ -103,6 +103,28 @@ func (ft *featureTest) JsonUnMarshaller() (map[string]any, error) {
 
 }
 
+func (ft *featureTest) SystemResponse(want string) error {
+
+	body, err := ft.JsonUnMarshaller()
+
+	if err != nil {
+		log.Println(err.Error())
+
+		return err
+	}
+
+	got := body["message"]
+
+	if got != want {
+
+		err := fmt.Sprintf("The system expected %v , but got %v", want, got)
+		return errors.New(err)
+	}
+
+	return nil
+
+}
+
 func (ft *featureTest) GetHandler() *gin.Engine {
 	db, err := repository.NewDB()
 
@@ -167,7 +189,7 @@ func (ft *featureTest) ViewCartItem(session_id int) error {
 
 	params := url.Values{}
 
-	params.Add("session_id", "1")
+	params.Add("session_id", fmt.Sprintf("%v", session_id))
 
 	Url.RawQuery = params.Encode()
 
@@ -215,23 +237,7 @@ func (ft *featureTest) AddCartItem() error {
 
 func (ft *featureTest) AddItemResponse(want string) error {
 
-	body, err := ft.JsonUnMarshaller()
-
-	if err != nil {
-		log.Println(err.Error())
-
-		return err
-	}
-
-	got := body["message"]
-
-	if got != want {
-
-		err := fmt.Sprintf("The system expected %v , but got %v", want, got)
-		return errors.New(err)
-	}
-
-	return nil
+	return ft.SystemResponse(want)
 
 }
 
@@ -349,6 +355,45 @@ func (ft *featureTest) SystemUpdateQuantity(want int) error {
 
 }
 
+// checkout sterp definition
+
+func (ft *featureTest) CheckoutCartItem(user_id int) error {
+
+	Url, err := url.Parse(ft.server.URL + "/cart/checkout")
+
+	if err != nil {
+		return err
+	}
+
+	params := url.Values{}
+
+	params.Add("user_id", fmt.Sprintf("%v", user_id))
+
+	Url.RawQuery = params.Encode()
+
+	b, err := ft.JsonMarshaller(ft.item)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := ft.server.Client().Post(Url.String(), "application/json",
+		bytes.NewBuffer(b))
+
+	if err != nil {
+		return err
+	}
+	ft.resp = resp
+	return nil
+
+}
+
+func (ft *featureTest) CheckoutItemSystemResponse(want string) error {
+
+	return ft.SystemResponse(want)
+
+}
+
 func TestFeature(t *testing.T) {
 
 	suite := godog.TestSuite{
@@ -393,4 +438,6 @@ func InitializeScenario(c *godog.ScenarioContext) {
 
 	// checkout
 
+	c.Step(`^I check out the items I had in the my shopping cart (\d+),$`, ft.CheckoutCartItem)
+	c.Step(`^the system should return "([^"]*)"\.$`, ft.CheckoutItemSystemResponse)
 }

@@ -5,8 +5,9 @@ Feature: Checkout
 
     Scenario: Check Out Cart Item 
 
-    When I check out the items i have in the my shopping cart <user_id>
-    Then The system should checkout the item and clear the cart 
+    When I check out the items I had in the my shopping cart <user_id>,
+    Then the system should return "your order is created successfully".
+    
     Examples:
-        | user_id | 
-        | 2  |
+        | user_id |
+        | 1  |
