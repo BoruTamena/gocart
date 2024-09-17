@@ -6,11 +6,12 @@ Feature: Add
     Scenario: Add New Item 
     # Given user has a session id 1,
     Then I add item a new product with a <product_id>,<session_id> and <quantity>,
-    Then the system should add a new product into cart and return "new item add seccussfully".
+    Then the system should add  product item into cart 
+    Then the system should return <response>.
     Examples:
-        | product_id | session_id | quantity |
-        | 2  | 3 | 1  |
-        | 1  | 1 | 1  |
+        | product_id | session_id | quantity |response|
+        | 2 |  3| 1  | new item add seccussfully |
+    
         
 
     # Scenario: Add Existing item 

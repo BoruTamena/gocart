@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -68,6 +69,37 @@ func (ft *featureTest) JsonMarshaller(item Item) ([]byte, error) {
 	}
 
 	return js_item, nil
+
+}
+
+func (ft *featureTest) JsonUnMarshaller() (map[string]any, error) {
+
+	var ResponseBody map[string]any
+
+	if ft.resp == nil {
+		log.Println("response is nil, cannot unmarshal", ft.resp)
+		return nil, errors.New("response is nil, cannot unmarshal")
+	}
+
+	body, err := io.ReadAll(ft.resp.Body)
+
+	if err != nil {
+
+		return nil, err
+	}
+
+	defer ft.resp.Body.Close()
+
+	log.Printf("Raw response body: %s", string(body)) // Log the raw JSON
+
+	err = json.Unmarshal(body, &ResponseBody)
+
+	if err != nil {
+
+		return nil, err
+	}
+
+	return ResponseBody, nil
 
 }
 
@@ -156,7 +188,9 @@ func (ft *featureTest) ViewCartItem(session_id int) error {
 
 }
 
-func (ft *featureTest) AddCartItem(want string) error {
+// add new item step definition
+
+func (ft *featureTest) AddCartItem() error {
 
 	// adding new item to cart
 	js, err := ft.JsonMarshaller(ft.item)
@@ -169,11 +203,34 @@ func (ft *featureTest) AddCartItem(want string) error {
 		"application/json", bytes.NewBuffer(js))
 
 	if err != nil {
+		log.Print(err)
+		return err
+
+	}
+	ft.resp = resp
+
+	return nil
+
+}
+
+func (ft *featureTest) AddItemResponse(want string) error {
+
+	body, err := ft.JsonUnMarshaller()
+
+	if err != nil {
+		log.Println(err.Error())
+
 		return err
 	}
-	log.Print("response", resp)
-	ft.resp = resp
-	log.Print("response body log", ft.resp)
+
+	got := body["message"]
+
+	if got != want {
+
+		err := fmt.Sprintf("The system expected %v , but got %v", want, got)
+		return errors.New(err)
+	}
+
 	return nil
 
 }
@@ -226,6 +283,7 @@ func (ft *featureTest) DecreaseQuantity() error {
 		return err
 	}
 	ft.resp = resp
+
 	return nil
 
 }
@@ -242,10 +300,53 @@ func (ft *featureTest) IncreaseQuantity() error {
 		bytes.NewBuffer(b))
 
 	if err != nil {
+
+		log.Println("request is failing ", err)
 		return err
 	}
+
+	if resp == nil {
+		log.Println("can't update the quantity of the item  ", resp)
+		return errors.New("can't update the quantity of the item ")
+	}
 	ft.resp = resp
+	log.Println("Response successfully set:", ft.resp)
 	return nil
+
+}
+
+func (ft *featureTest) SystemUpdateQuantity(want int) error {
+
+	// log.Println("bd------------------", ft.resp.Body)
+
+	body, err := ft.JsonUnMarshaller()
+
+	log.Print("marshaller", body, err)
+
+	if err != nil {
+		log.Println("response errors", err)
+		return err
+	}
+
+	log.Print("marshaller", body)
+	got := body["row"]
+
+	if floatVal, ok := got.(float64); ok {
+		// Convert float64 to int, assuming no fractional part is expected
+		intvalue := int(floatVal)
+
+		if intvalue != want {
+			errMsg := fmt.Sprintf("The system expected row to be %v, but got %v", want, intvalue)
+			log.Println(errMsg)
+			return errors.New(errMsg)
+		}
+	} else {
+		// Handle the case where 'got' is not a number (int/float)
+		return errors.New("can't convert body['row'] to integer")
+	}
+
+	return nil
+
 }
 
 func TestFeature(t *testing.T) {
@@ -278,10 +379,16 @@ func InitializeScenario(c *godog.ScenarioContext) {
 		})
 
 	c.Step(`^I add item a new product with a (\d+),(\d+) and (\d+),$`, ft.RegisterItem)
-	c.Step(`^the system should add a new product into cart and return "([^"]*)"\.$`, ft.AddCartItem)
-
-	//update step
+	c.Step(`^the system should add  product item into cart$`, ft.AddCartItem)
+	c.Step(`^the system should return "([^"]*)"\.$`, ft.AddItemResponse)
+	// update step
 	c.Step(`^I update item in cart with (\d+),  (\d+)  by increasing quantity,$`, ft.RegisterUpdateItem)
-	c.Step(`^The system should increase the item quantity and update cumulative item\.$`, ft.IncreaseQuantity)
+	c.Step(`^The system should increase the item quantity$`, ft.IncreaseQuantity)
+	c.Step(`^the response should  return affected row (\d+)\.$`, ft.SystemUpdateQuantity)
+
+	// decrease
+	c.Step(`^I update item in cart with (\d+)  and (\d+) by decreasing  quantity$`, ft.RegisterUpdateItem)
+	c.Step(`^The system should decrease the item quantity$`, ft.DecreaseQuantity)
+	c.Step(`^the response should  return affected row (\d+)$`, ft.SystemUpdateQuantity)
 
 }
