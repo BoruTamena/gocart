@@ -116,4 +116,21 @@ func (cr cartRepository) SelectCartItem(c context.Context, session_id sql.NullIn
 
 }
 
-func (cr cartRepository) CartCheckOut(c context.Context) {}
+func (cr cartRepository) CartCheckOut(c context.Context, user_id sql.NullInt32) error {
+
+	query := rsqlc.New(cr.db.GetDB())
+
+	defer cr.db.Close()
+
+	// checking out
+	err := query.CheckoutCart(c, user_id)
+
+	if err != nil {
+
+		log.Println("error is come from here...", err)
+		return err
+	}
+
+	return err
+
+}

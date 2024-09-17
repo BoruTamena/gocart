@@ -21,6 +21,31 @@ type Querier interface {
 	//  "modified_at" = CURRENT_TIMESTAMP
 	//  RETURNING cart_item.quantity
 	AddCartItem(ctx context.Context, arg AddCartItemParams) (int32, error)
+	// Clear the user's cart
+	//
+	//  WITH order_creation AS (
+	//      -- Create a new order for the user
+	//      INSERT INTO public."order_details" ("user_id", "total", "created_at")
+	//      SELECT ss."user_id", SUM(p."price" * ci."quantity"), CURRENT_TIMESTAMP
+	//      FROM public."shopping_session" ss
+	//      JOIN public."cart_item" ci ON ci."session_id" = ss."id"
+	//      JOIN public."product" p ON ci."product_id" = p."id"
+	//      WHERE ss."user_id" = $1
+	//      GROUP BY ss."user_id"
+	//      RETURNING "id"
+	//  ),
+	//  order_items AS (
+	//      -- Insert items from cart into order_items using the created order_id
+	//      INSERT INTO public."order_items" ("order_id", "product_id", "created_at")
+	//      SELECT oc."id", ci."product_id", CURRENT_TIMESTAMP
+	//      FROM public."cart_item" ci
+	//      JOIN public."shopping_session" ss ON ci."session_id" = ss."id"
+	//      JOIN order_creation oc ON true
+	//      WHERE ss."user_id" = $1
+	//  )
+	//  DELETE FROM public."cart_item"
+	//  WHERE "session_id" = (SELECT "id" FROM public."shopping_session" WHERE "user_id" = $1)
+	CheckoutCart(ctx context.Context, dollar_1 sql.NullInt32) error
 	//CreateShoppingSession
 	//
 	//  INSERT INTO shopping_session ("user_id", "total", "created_at", "modified_at")

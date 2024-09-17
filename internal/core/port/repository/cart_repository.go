@@ -14,5 +14,5 @@ type CartRepository interface {
 	DecreaseQuantity(context.Context, rsqlc.DecreaseQuantityParams) error
 	DeleteCartItem(context.Context, rsqlc.RemoveCartItemParams) (int, error)
 	SelectCartItem(context.Context, sql.NullInt32) ([]rsqlc.Product, error)
-	CartCheckOut(context.Context)
+	CartCheckOut(context.Context, sql.NullInt32) error
 }

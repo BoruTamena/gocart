@@ -14,5 +14,5 @@ type CartService interface {
 	DecreaseItemQuantity(context.Context, models.Item) (int, error)
 	RemoveItem(context.Context, models.DeletedItem) (int, error)
 	ViewCartItem(context.Context, int) ([]rsqlc.Product, error)
-	Checkout(context.Context)
+	Checkout(context.Context, int) error
 }

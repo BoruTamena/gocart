@@ -134,4 +134,16 @@ func (cs cartService) ViewCartItem(c context.Context, session_id int) ([]rsqlc.P
 	return product, nil
 
 }
-func (cs cartService) Checkout(c context.Context) {}
+func (cs cartService) Checkout(c context.Context, user_id int) error {
+
+	id := sql.NullInt32{Int32: int32(user_id), Valid: true}
+
+	err := cs.Rep.CartCheckOut(c, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

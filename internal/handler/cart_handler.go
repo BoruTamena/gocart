@@ -30,6 +30,7 @@ func (ch CartHandler) InitHandler() {
 	api.POST("/increment", ch.AddItemQuantity)
 	api.POST("/decrement", ch.SubtractItemQuantity)
 	api.DELETE("/remove", ch.RemoveItemFromCart)
+	api.POST("checkout", ch.CheckoutCartItems)
 
 }
 
@@ -121,7 +122,7 @@ func (ch CartHandler) ViewCartItems(c *gin.Context) {
 	sessionID, err := strconv.Atoi(session_id)
 
 	if err != nil {
-		// setting error
+		// setting errors
 		c.Error(err)
 		return
 
@@ -187,5 +188,25 @@ func (ch CartHandler) SubtractItemQuantity(c *gin.Context) {
 }
 
 func (ch CartHandler) CheckoutCartItems(c *gin.Context) {
+
+	user_id := c.Query("user_id")
+
+	userID, err := strconv.Atoi(user_id)
+
+	if err != nil {
+		// setting error
+		c.Error(err)
+		return
+
+	}
+
+	if err := ch.Service.Checkout(c.Request.Context(), userID); err != nil {
+
+		c.Error(err)
+		return
+
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "your order is created successfully"})
 
 }

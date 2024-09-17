@@ -391,4 +391,6 @@ func InitializeScenario(c *godog.ScenarioContext) {
 	c.Step(`^The system should decrease the item quantity$`, ft.DecreaseQuantity)
 	c.Step(`^the response should  return affected row (\d+)$`, ft.SystemUpdateQuantity)
 
+	// checkout
+
 }
