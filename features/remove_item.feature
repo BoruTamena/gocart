@@ -1,12 +1,13 @@
-# Feature: Remove 
+Feature: Remove 
 
-#     remove feature is responsible for removing each item from 
-#     shopping cart 
+    remove feature is responsible for removing each item from 
+    shopping cart 
 
 
-#     Scenario:Remove Item 
-#     When I remove item with <product id> from the cart .
-#     Examples:
-#         | product_id|
-#         |  1  | 
-#     Then the system should remove the item for the cart and return "item removed successfully "
+    Scenario:Remove Item 
+    When The user <user_id> remove item with <product_id> from the cart .
+    Then the system should remove the item for the cart 
+    Then the system should  return "item removed successfully".
+    Examples:
+        | user_id | product_id|
+        |  3  | 2 |  

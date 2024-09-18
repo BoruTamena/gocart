@@ -164,7 +164,7 @@ func (ft *featureTest) RegisterItem(product_id, session_id, quantity int) error 
 	return errors.New("invalid product ,session and quantity")
 }
 
-func (ft *featureTest) RegisterDeleteItem(P_id, S_id int) error {
+func (ft *featureTest) RegisterDeleteItem(S_id, P_id int) error {
 
 	if P_id != 0 && S_id != 0 {
 
@@ -241,23 +241,41 @@ func (ft *featureTest) AddItemResponse(want string) error {
 
 }
 
-func (ft *featureTest) RemoveCartItem(S_id, P_id int) error {
+// remove cart item step definition
+
+func (ft *featureTest) RemoveCartItem() error {
 
 	b, err := ft.JsonMarshaller(ft.item)
 
 	if err != nil {
 		return err
 	}
+
+	// creating a request
+	req, err := http.NewRequest(http.MethodDelete, ft.server.URL+"/cart/remove", bytes.NewBuffer(b))
 	// removing cart item
-	resp, err := ft.server.Client().Post(ft.server.URL+"/cart/remove",
-		"application/json", bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
+	resp, err := ft.server.Client().Do(req)
 
 	if err != nil {
 		return err
 	}
+
+	if resp == nil {
+		return errors.New("request error !!!")
+	}
 	ft.resp = resp
 
 	return nil
+
+}
+
+func (ft *featureTest) RemoveItemSystemResponse(want string) error {
+
+	return ft.SystemResponse(want)
 
 }
 
@@ -426,17 +444,25 @@ func InitializeScenario(c *godog.ScenarioContext) {
 	c.Step(`^I add item a new product with a (\d+),(\d+) and (\d+),$`, ft.RegisterItem)
 	c.Step(`^the system should add  product item into cart$`, ft.AddCartItem)
 	c.Step(`^the system should return "([^"]*)"\.$`, ft.AddItemResponse)
-	// update step
+	// // update step
 	c.Step(`^I update item in cart with (\d+),  (\d+)  by increasing quantity,$`, ft.RegisterUpdateItem)
 	c.Step(`^The system should increase the item quantity$`, ft.IncreaseQuantity)
 	c.Step(`^the response should  return affected row (\d+)\.$`, ft.SystemUpdateQuantity)
 
-	// decrease
+	// // decrease
 	c.Step(`^I update item in cart with (\d+)  and (\d+) by decreasing  quantity$`, ft.RegisterUpdateItem)
 	c.Step(`^The system should decrease the item quantity$`, ft.DecreaseQuantity)
 	c.Step(`^the response should  return affected row (\d+)$`, ft.SystemUpdateQuantity)
 
-	// checkout
+	// remove item from the cart
+
+	c.Step(`^The user (\d+) remove item with (\d+) from the cart \.$`, ft.RegisterDeleteItem)
+
+	c.Step(`^the system should remove the item for the cart$`, ft.RemoveCartItem)
+
+	c.Step(`^the system should  return "([^"]*)"\.$`, ft.RemoveItemSystemResponse)
+
+	// // checkout
 
 	c.Step(`^I check out the items I had in the my shopping cart (\d+),$`, ft.CheckoutCartItem)
 	c.Step(`^the system should return "([^"]*)"\.$`, ft.CheckoutItemSystemResponse)

@@ -108,7 +108,7 @@ func (ch CartHandler) RemoveItemFromCart(c *gin.Context) {
 		return
 	}
 	if affected_row > 0 {
-		c.JSON(http.StatusAccepted, gin.H{"message": "item removed from cart "})
+		c.JSON(http.StatusAccepted, gin.H{"message": "item removed successfully"})
 	} else {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": " something went wrong "})
 
